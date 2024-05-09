@@ -1,9 +1,10 @@
 
-library(tidyverse)
+pacman::p_load(
+  tidyverse,
+  stringi
+)
 
-  library(stringi)
-stringi::stri_replace()
-abri_finbra <- function(ano) {
+abrir_finbra <- function(ano) {
   setNames(lapply(ano, function(i) {
     df <- readRDS(paste0("0. data-raw/finbra/finbra_", i, ".rds"))
     if ("Total Receitas" %in% colnames(df)) {variaveis <- c("UF", "Instituição", "Cod.IBGE", "População", "Total Receitas", "Total Geral da Despesa")
