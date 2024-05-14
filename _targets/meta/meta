@@ -1,7 +1,0 @@
-name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
-abrir_df|function|9eac0634f5fe2d85|||||||||||||||
-abrir_finbra|function|c3db948995804b66|||||||||||||||
-abrir_leitos|function|68c779ec715f7b7d|||||||||||||||
-ano|stem|23ab43713f69b5ed|ba06d5781647ef96|2c530c1562a7fbd1|-1210606633||t19852.8245555837s|d0ec9a5a63f98b43|53|rds|local|vector|||0.52||
-anos|stem|b6cc49ee7f587d01|9c80db6fd74c35ac|2c530c1562a7fbd1|-814697309||t19852.8311427182s|da7f33a0f827466a|104|rds|local|vector|||0.52||
-dfs|stem|9bf4a973603c1061|1526c28df257812f|590d334160351cc9|346292619||t19852.83122764s|196f9bc33d225a9c|5273850|rds|local|vector|||5.25||
