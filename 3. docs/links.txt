@@ -1,0 +1,8 @@
+
+zips-pocos por ano:
+https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-estatisticos
+https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-estatisticos/de/ppg/pp/producao-pocos-2023.zip
+
+plantaforma em operacao:
+https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/lista-de-plataformas-em-operacao
+https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/arquivos/lpo/dados-abertos-plataformas-operacao.csv
