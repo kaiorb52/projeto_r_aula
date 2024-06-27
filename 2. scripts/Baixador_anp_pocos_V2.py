@@ -46,7 +46,6 @@ def download_and_extract_zip(url, extract_path):
     print(f"Fazendo o download do arquivo: {zip_filename} ...")
     download_with_retries(url, zip_path)
     
-    # Renomear o arquivo ZIP se necessário
     ano = zip_filename.split('-')[-1].split('.')[0]  # Extrai o ano do nome original do arquivo
     desired_name = f"producao-pocos-{ano}"
     zip_path = rename_zip_if_needed(zip_path, desired_name)
@@ -80,6 +79,7 @@ def download_and_extract_zip(url, extract_path):
 
 def repeticao_anos(ano_inicial, ano_final):
     ano_final = ano_final + 1
+    
     for i in range(ano_inicial, ano_final):
         url_ano = f"https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-estatisticos/de/ppg/pp/producao-pocos-{i}.zip"
         print("Ano:", i)
