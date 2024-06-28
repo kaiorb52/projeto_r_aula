@@ -4,14 +4,14 @@
 
 # ===========================================================================
 # 
-# Este script é uma sistematização inicial com os dados da produção de barril de 
+# Este script é uma sistematização inicial com os dados da Producao de barril de 
 # petroleo da Agencia Nacional do Petroleo, presentes no caminho: "0. data-raw/",
 # encontrado na url: "".
 # Que foram baixados e extraidos com o script python "2. scripts/Baixador_anp_pocos_V2.py"
 # e reordernados a mão pelo autor.
 # Ademais, foi utilizado tambem do banco de dados xxx tambem da ANP,
 # encontrado na url: "". Esse fonte de dados foi utilizada para aglomerar 
-# informações relativas a lat. e long. dos poços e outros detalhes. 
+# informações relativas a lat. e long. dos pocos e outros detalhes. 
 # 
 # ===========================================================================
 
@@ -20,7 +20,7 @@
 # A presente exploração tem o intuito de levantar fatores que diferenciam as
 # bacias de Santos e de Campos. Analisando a evolução de ambas as bacias produtoras 
 # e buscando diagnosticar tendências. A hipótese do trabalho seria se existiria 
-# uma inerente instabilidade política na produção de petróleo.
+# uma inerente instabilidade política na Producao de petróleo.
 
 options(scipen = 999)
 set.seed(100)
@@ -49,7 +49,7 @@ pacotes_load <- function(...){
 
 import_producao1 <- function(ano, mes, skip) {
   
-  # Responsavel pela importação dos dados das produção dos poços de petroleo.
+  # Responsavel pela importação dos dados das Producao dos pocos de petroleo.
   # A função carrega as respectivas panilhas xlsx do meses e anos selecionado.
   # Faz o trabalho de sistematizar a manipulação inicial do banco de dados,
   # transformando os xlsxs importados em uma lista, limpa e descarta variaveis 
@@ -83,8 +83,8 @@ import_producao1 <- function(ano, mes, skip) {
 
 import_producao2 <- function(path) {
 
-  # A presente função é outra facilitadora para a importação das panilhas da produção 
-  # por poços. Contudo é uma elaboração mais simples, se comparado a anterior. 
+  # A presente função é outra facilitadora para a importação das panilhas da Producao 
+  # por pocos. Contudo é uma elaboração mais simples, se comparado a anterior. 
   # Ela foi feita para os anos que os dados, eram apenas armazenados em uma unica panilha 
   # anual, como foi no caso de 2005-2018.
 
@@ -115,20 +115,17 @@ themes_pallet <- function(pallet = F){
   # Essa função esta aqui por conviniencia e para facilitar o trabalho de ajustar,
   # os graficos para as preferencias do autor.
   
-  cores <- function(...){
-    scale_color_manual(
-      values = c(
-        MetBrewer::met.brewer("Homer2", 3)
-      )
-    )
+  cores <- function(...) {
+    scale_color_manual(values = c(MetBrewer::met.brewer("Homer2", 3)))
   }
-  
+
   p <- ggthemes::theme_clean() +
   theme(
     legend.position = "bottom",
     legend.background = element_rect(colour = "white"),
-    axis.text.y = element_text(size = 12, face = "italic"),
-    axis.text.x = element_text(size = 14, face = "bold"),
+    axis.text.y = element_text(size = 14, face = "italic"),
+    axis.text.x = element_text(size = 16, face = "bold"),
+    strip.text = element_text(size = 15, face = "italic"),
     plot.background = element_rect(colour = "white")
   )
   
@@ -139,17 +136,25 @@ themes_pallet <- function(pallet = F){
   }
 }
 
-save(themes_pallet, file = "1. data/theme_pallet")
+funcoes <- list(
+    pacotes_load = pacotes_load, 
+    import_producao1 = import_producao1,
+    import_producao2 = import_producao2,
+    themes_pallet = themes_pallet
+  ) 
+  
+save(funcoes, file = "1. data/funcoes") +
+rm(funcoes)
 
 # 1. Criação dos data.frames ================================================
-## 1.1 Produção dos poços de petroleo unificados ============================
+## 1.1 Producao dos pocos de petroleo unificados ============================
 
   # Esse sistematização cria o principal data.frame do projeto. O segmento utiliza
   # da função import_producao1 e 2 para abrir as panilhas xlsx. É utilizado de listas 
   # para armazenar esses dfs e com isso é utilizado do bind_rows para unir toda a 
   # lista. 
 
-  # O produto final é o df producao_u(nificado) que compoe a produção de petroleo 
+  # O produto final é o df producao_u(nificado) que compoe a Producao de petroleo 
   # de cada poço de exploração em determinado mes do ano. Os anos disponiveis pela anp
   # são de 2005-2023 e o df é composto por 10 colunas (variaveis) e 225.543 linhas.
 
@@ -170,12 +175,12 @@ for (ano in 2005:2018){
 producao_u <- list_prod |>
   janitor::clean_names() |>
   bind_rows() |>
-  mutate(recorte=case_when(
-    bacia =="Campos"~bacia,
-    bacia =="Santos"~bacia,
-    TRUE ~ "Outros"
-  )) |>
-  janitor::clean_names() |>
+  mutate(
+  recorte = case_when(
+    bacia == "Campos" ~ paste0(bacia, "/RJ"),
+    bacia == "Santos" ~ paste0(bacia, "/RJ"),
+    TRUE ~ "Outras Bacias")
+  ) |>
   filter(
     !is.na(estado) &
     operador != "Operador" & 
@@ -186,17 +191,17 @@ saveRDS(file = "1. data/dados_tratados/producao_u.rds", object = producao_u)
 
 rm(list = ls())
 
-## 1.2 df das informações poços Maritimos ===================================
+## 1.2 df das informações pocos Maritimos ===================================
 
-  # O data.frame criado no codigo a seguir é uma importação da tabelas de poços,
-  # que contem variaveis com detalhes dos poços como profundidade da perfuração,
+  # O data.frame criado no codigo a seguir é uma importação da tabelas de pocos,
+  # que contem variaveis com detalhes dos pocos como profundidade da perfuração,
   # variaveis categoricas para se o poço é do pre-sal ou não, se é um poço maritimo
   # ou em terra e outros detalhes. 
   
   # Dessa forma, o objeto criado:pocos_m_2024, possue 7075 linhas e 76 colunas. 
   # Sendo, cada linha respectivo a um poço de petroleo. O que constata que ao menos 
   # do que se tem consetimento ou foi publicado pela ANP, foram encontrados 
-  # 7075 poços no Brasil.
+  # 7075 pocos no Brasil.
 
 pocos_m_2024 <- data.table::fread("0. data-raw/Tabela_pocos_2024_Maio_12.csv", encoding = "Latin-1") |> 
   filter(TERRA_MAR=="M") |>
@@ -210,45 +215,49 @@ pocos_m_2024 <- data.table::fread("0. data-raw/Tabela_pocos_2024_Maio_12.csv", e
     LATITUDE_BASE_DD = stri_replace_all_fixed(LATITUDE_BASE_DD, ",", "."),
     LONGITUDE_BASE_DD = stri_replace_all_fixed(LONGITUDE_BASE_DD, ",", ".")
   ) |>
+  janitor::clean_names() |>
   mutate(
     presal = case_when(
-      ATINGIU_PRESAL == "S" ~ "Poços do pre-sal",
-      TRUE ~ "Outros"),
-    presal = factor(presal, levels = c("Poços do pre-sal", "Outros")),
-    recorte = case_when(
-      BACIA == "Campos" ~ BACIA,
-      BACIA == "Santos" ~ BACIA,
+      atingiu_presal == "S" ~ "pocos do pre-sal",
       TRUE ~ "Outros"
-    )
-  ) |>
-  janitor::clean_names()
+    ),
+    presal = factor(presal, levels = c("pocos do pre-sal", "Outros")),
+    recorte = case_when(
+      bacia == "Campos" ~ paste0(bacia, "/RJ"),
+      bacia == "Santos" ~ paste0(bacia, "/RJ"),
+      TRUE ~ "Outras Bacias"
+    ),
+  )
 
 saveRDS(file = "1. data/dados_tratados/pocos_m_2024.rds", object = pocos_m_2024)
 
 rm(list = ls())
 
-# 1.3 Mesclagem dos dfs producao_u & pocos_m_2024 ===========================
+## 1.3 Mesclagem dos dfs producao_u & pocos_m_2024 ===========================
 
   # O codigo ultiliza dos dois df criados anteriormente para criar um terceiro 
   # mais robusto. Nele costara as informações de ambos as fontes, o que possibita 
-  # a correlação de variaveis da natureza dos poços. 
+  # a correlação de variaveis da natureza dos pocos. 
 
-pocos_m_2024 <- readRDS("1. data/dados_tratados/pocos_m_2024.rds")
+pocos_m_2024 <- readRDS("1. data/dados_tratados/pocos_m_2024.rds") |>
+  select(-operador)
 
-producao_u <- readRDS("1. data/dados_tratados/producao_u.rds")
+producao_u <- readRDS("1. data/dados_tratados/producao_u.rds") 
 
 pocos_prod <- producao_u |>
   filter(petroleo_bbl_dia > 1) |>
   left_join(pocos_m_2024, by= c("nome_poco_anp"="poco","recorte")) |>
   mutate(
     ano_mes = ym(paste0(periodo)),
-    profundidade_numeric = as.numeric(stri_replace_all_fixed(profundidade_vertical_m, ",", "."))
+    profundidade_numeric = as.numeric(stri_replace_all_fixed(profundidade_vertical_m, ",", ".")),
+    petrobras = ifelse(operador == "Petrobras", operador, "Outras Empresas"),
+    petrobras = factor(petrobras, levels = c("Petrobras", "Outras Empresas"))
   )
 
   # O banco poco_prod contem 76 colunas e 174.366 linhas. A redução no numero de 
   # linhas se comparado ao producao_u(nificado), ocorre devido a filtragem feita 
-  # anteriormente dos poços que não tiveram produção de petroleo. A existencia 
-  # dessas casos ocorre, pois nem todos os poços são produtores de petroleo, uma 
+  # anteriormente dos pocos que não tiveram Producao de petroleo. A existencia 
+  # dessas casos ocorre, pois nem todos os pocos são produtores de petroleo, uma 
   # gama deles possuem apenas gas natural.
 
 saveRDS(file = "1. data/dados_tratados/pocos_prod.rds", object = pocos_prod)
@@ -257,10 +266,129 @@ rm(list = ls())
 
 # 2. Graficos ===============================================================
 # 2.0 Importação dos dfs necessarios ========================================
+## 2.1 Graficos Exploratorios com os dados dos pocos ========================
 
 pocos_prod <- readRDS("1. data/dados_tratados/pocos_prod.rds")
-save(pocos_prod, file = "1. data/dados_tratados/pocos_prod.rda")
-load("1. data/theme_pallet")
+load("1. data/funcoes")
 
-## 2.1 Graficos Exploratorios com os dados dos poços ========================
+criar_graph <- function(..., data = pocos_prod, cor = NULL, titulo = NULL, paleta = F, legenda = NULL, facet = FALSE, y_var = petroleo) {
 
+  options(scipen = 999)
+  funcoes$pacotes_load()
+
+  p <- data |>
+  mutate(periodo = lubridate::ym(periodo)) |>
+  group_by(...) |>
+  summarise(count = n(), petroleo = sum(petroleo_bbl_dia), .groups = 'drop') |>
+  ggplot(aes(x = periodo, y = {{y_var}})) +
+  geom_line(size = 2.0, aes(color = {{cor}})) +
+  labs(
+    x = NULL,
+    y = NULL, 
+    title = titulo,
+    color = legenda
+  ) +
+  scale_x_date(
+    limits = as.Date(c("2005-01-01", "2023-12-31")),
+    breaks = seq(as.Date("2005-01-01"), as.Date("2023-12-31"), by = "2 year"),
+    date_labels = "%Y"
+  ) +
+  funcoes$themes_pallet(pallet = paleta) 
+  
+  if (facet == TRUE){
+    p <- p + facet_wrap(.~recorte) 
+  }
+
+  return(p)
+}
+
+y_ajust <- function(type = 1){
+  
+  if (type == 1){
+    x <- scale_y_continuous(
+      breaks = seq(0, 5000000, by = 500000),
+      labels = scales::dollar_format(prefix = "", big.mark = ".", decimal.mark = ",")
+    )
+    return(x)
+  }
+  if (type == 2){
+    x <- scale_y_continuous(
+      breaks = seq(0, 1000000, by = 100),
+      labels = scales::dollar_format(prefix = "", big.mark = ".", decimal.mark = ",")
+    )
+    return(x)
+  }
+}
+colors <- function(){scale_color_manual(values = c("limegreen","skyblue3"))}
+
+list_graficos <- list(
+  g_1 = criar_graph(periodo, titulo = "Producao de barril de petroleo por dia, Producao Acumulada(2005-2023)") + y_ajust(),
+  g_2 = criar_graph(
+    periodo,
+    recorte,
+    titulo = "Producao de barril de petroleo por dia, Producao por Bacia(2005-2023)",
+    cor = recorte,
+    paleta = T
+  ) + y_ajust(),
+  g_3 = criar_graph(periodo, petrobras, titulo = "Producao de barril de petroleo por dia, Producao por Operador(2005-2023)", cor = petrobras, paleta = T) + y_ajust() + colors(),
+  g_4 = criar_graph(periodo, titulo = "Quantidade de pocos produzindo petroleo(2005-2023)", y_var = count) + y_ajust(2),
+  g_5 = criar_graph(
+    periodo,
+    recorte,
+    titulo = "Quantidade de pocos produzindo petroleo, Quantidade por Bacia(2005-2023)",
+    y_var = count,
+    cor = recorte,
+    paleta = T
+  ) + y_ajust(2),
+  g_6 = criar_graph(
+    periodo,
+    petrobras,
+    titulo = "Quantidade de pocos produzindo petroleo, Quantidade por Operador(2005-2023)",
+    y_var = count,
+    cor = petrobras,
+    paleta = T
+  ) + y_ajust(2) + colors(),
+  g_7 = criar_graph(
+    periodo,
+    recorte,
+    petrobras,
+    titulo = "Producao de barril de petroleo por dia, Producao por Operador nas Bacias de Santos e Campos/RJ(2005-2023)",
+    data = subset(pocos_prod, recorte != "Outras Bacias"),
+    cor = petrobras,
+    facet = T,
+    y_var = petroleo
+  ) + y_ajust() + colors(),
+  g_8 = criar_graph(
+    periodo,
+    recorte,
+    petrobras,
+    titulo = "Quantidade de pocos produzindo petroleo, Quantidade por Operador nas Bacias de Santos e Campos/RJ(2005-2023)",
+    data = subset(pocos_prod, recorte != "Outras Bacias"),
+    cor = petrobras,
+    facet = T,
+    y_var = count
+  ) + y_ajust(2) + colors()
+)
+
+for (g_name in names(list_graficos)){
+  library(glue)
+  grafico <- list_graficos[[g_name]]
+  ggsave(
+    plot = grafico,
+    filename = as.character(glue("4. figs/{g_name}.png")),
+    dpi = 400,
+    height = 7,
+    width = 12
+  )
+}
+
+criar_graph(
+  periodo,
+  recorte,
+  petrobras,
+  titulo = "Quantidade de pocos produzindo petroleo, Quantidade por Operador nas Bacias de Santos e Campos/RJ(2005-2023)",
+  data = subset(pocos_prod, recorte == "Campos/RJ"),
+  cor = petrobras,
+  facet = T,
+  y_var = count
+) + y_ajust(2) + colors()
