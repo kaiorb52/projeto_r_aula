@@ -5,13 +5,11 @@
 # ===========================================================================
 # 
 # Este script é uma sistematização inicial com os dados da Producao de barril de 
-# petroleo da Agencia Nacional do Petroleo, presentes no caminho: "0. data-raw/",
-# encontrado na url: "".
+# petroleo da Agencia Nacional do Petroleo, presentes no caminho: "0. data-raw/".
 # Que foram baixados e extraidos com o script python "2. scripts/Baixador_anp_pocos_V2.py"
-# e reordernados a mão pelo autor.
-# Ademais, foi utilizado tambem do banco de dados xxx tambem da ANP,
-# encontrado na url: "". Esse fonte de dados foi utilizada para aglomerar 
-# informações relativas a lat. e long. dos pocos e outros detalhes. 
+# e reordernados a mão pelo autor. Ademais, foi utilizado tambem do banco de dados 
+# "Tabela_pocos_2024_Maio_12" tambem da ANP. Esse fonte de dados foi utilizada para 
+# aglomerar informações relativas a lat. e long. dos pocos e outros detalhes. 
 # 
 # ===========================================================================
 
@@ -235,12 +233,20 @@ rm(list = ls())
 
 ## 1.3 Mesclagem dos dfs producao_u & pocos_m_2024 ===========================
 
-  # O codigo ultiliza dos dois df criados anteriormente para criar um terceiro 
-  # mais robusto. Nele costara as informações de ambos as fontes, o que possibita 
-  # a correlação de variaveis da natureza dos pocos. 
+  # Esse sistematização cria o principal data.frame do projeto. O codigo ultiliza 
+  # dos dois df criados anteriormente para criar um terceiro mais robusto. 
+  # Nele costara as informações de ambos as fontes, o que possibita a correlação 
+  # de variaveis da natureza dos pocos com a produlção de barril de petroleo. 
 
 pocos_m_2024 <- readRDS("1. data/dados_tratados/pocos_m_2024.rds") |>
   select(-operador)
+  
+  # A necessidade de remover a variavel operador, vem que ambos os bancos pocos_m_2024 &
+  # producao_u, possuem essa coluna. Contudo a informação entre os dois é conflitante.
+  # Foi decidido utilizar a var. do df producao_u, Pelo fato de o producao_u fazer uma 
+  # serie temporal, mes a mes, enquanto que o pocos_m_2024 traz informações tabuladas pela 
+  # ANP, no periodo mais recente. Assim é mais adequado para fazer o acompanhamento da 
+  # evolução dessa var o banco producao_u.
 
 producao_u <- readRDS("1. data/dados_tratados/producao_u.rds") 
 
@@ -254,7 +260,7 @@ pocos_prod <- producao_u |>
     petrobras = factor(petrobras, levels = c("Petrobras", "Outras Empresas"))
   )
 
-  # O banco poco_prod contem 76 colunas e 174.366 linhas. A redução no numero de 
+  # O banco poco_prod contem 75 colunas e 174.366 linhas. A redução no numero de 
   # linhas se comparado ao producao_u(nificado), ocorre devido a filtragem feita 
   # anteriormente dos pocos que não tiveram Producao de petroleo. A existencia 
   # dessas casos ocorre, pois nem todos os pocos são produtores de petroleo, uma 
@@ -280,6 +286,7 @@ criar_graph <- function(..., data = pocos_prod, cor = NULL, titulo = NULL, palet
   mutate(periodo = lubridate::ym(periodo)) |>
   group_by(...) |>
   summarise(count = n(), petroleo = sum(petroleo_bbl_dia), .groups = 'drop') |>
+  filter(count > 3) |>
   ggplot(aes(x = periodo, y = {{y_var}})) +
   geom_line(size = 2.0, aes(color = {{cor}})) +
   labs(
@@ -330,7 +337,13 @@ list_graficos <- list(
     cor = recorte,
     paleta = T
   ) + y_ajust(),
-  g_3 = criar_graph(periodo, petrobras, titulo = "Producao de barril de petroleo por dia, Producao por Operador(2005-2023)", cor = petrobras, paleta = T) + y_ajust() + colors(),
+  g_3 = criar_graph(
+    periodo,
+    petrobras,
+    titulo = "Producao de barril de petroleo por dia, Producao por Operador(2005-2023)",
+    cor = petrobras,
+    paleta = T
+  ) + y_ajust() + colors(),
   g_4 = criar_graph(periodo, titulo = "Quantidade de pocos produzindo petroleo(2005-2023)", y_var = count) + y_ajust(2),
   g_5 = criar_graph(
     periodo,
@@ -367,8 +380,36 @@ list_graficos <- list(
     cor = petrobras,
     facet = T,
     y_var = count
-  ) + y_ajust(2) + colors()
+  ) + y_ajust(2) + colors(),
+  g_9 = criar_graph(periodo, y_var = (petroleo / count), titulo = "Produtividade dos pocos, Produtividade Acumulada(2005-2023)"),
+  g_10 = criar_graph(
+    periodo,
+    recorte,
+    cor = recorte,
+    y_var = (petroleo / count),
+    titulo = "Produtividade dos pocos, Produtividade por bacia (2005-2023)",
+    paleta = T
+  ),
+  g_11 = criar_graph(
+    periodo,
+    petrobras,
+    cor = petrobras,
+    y_var = (petroleo / count),
+    titulo = "Produtividade dos pocos, Produtividade por operador (2005-2023)"
+  ) + colors(),
+  g_12 = criar_graph(
+    periodo,
+    recorte,
+    petrobras,
+    titulo = "Produtividade dos pocos, por Operador nas Bacias de Santos e Campos/RJ(2005-2023)",
+    data = subset(pocos_prod, recorte != "Outras Bacias"),
+    cor = petrobras,
+    facet = T,
+    y_var = (petroleo / count)
+  ) + colors()
 )
+
+## 2.2 Salvamento dos graficos ==============================================
 
 for (g_name in names(list_graficos)){
   library(glue)
@@ -382,13 +423,46 @@ for (g_name in names(list_graficos)){
   )
 }
 
-criar_graph(
-  periodo,
-  recorte,
-  petrobras,
-  titulo = "Quantidade de pocos produzindo petroleo, Quantidade por Operador nas Bacias de Santos e Campos/RJ(2005-2023)",
-  data = subset(pocos_prod, recorte == "Campos/RJ"),
-  cor = petrobras,
-  facet = T,
-  y_var = count
-) + y_ajust(2) + colors()
+# Conclusão e analise:
+
+  # Os graficos exploratorios indicam que ao decorrer do recorte temporal analisado, 
+  # 2005-2023, em geral a produção de barris de petroleo apenas aumentou(g_1). 
+  # Contudo, esse cresimento teve porpoções desiguiais nas diferentes bacias, como 
+  # mostra o grafico g_2. A bacia de Campos/RJ teve uma produção estavel e alta 
+  # de 2005 a 2016, até que em 2017 ela declinou, enquanto a bacia de Santos/RJ 
+  # teve um crescimento constante, ultrapassando a produção de Campos/RJ em 2018.
+  # O g_3, demonstra que em geral a Petrobras se posiciona como o maior explorador 
+  # de Petroleo brasileiro, enquanto o grupo de "Outras Empresas", representam 
+  # uma amostra pequena da produção nacional. Esse diagnostico é em geral esperado
+  # mediante ao fato que historicamente a Petrobras possuiu monopolio da exploração
+  # do petroleo.
+  
+  # Analisando num outro ambito, a contagem de poços sendo explorados sempre
+  # manteve o mesmo nivel, contudo com uma queda significativa em 2020 (g_4). O
+  # g_5 traz uma perspectiva panoramica dessa queda. No grafico é possivel
+  # identificar que a bacia de Campos/RJ sempre teve o maior numero de poços
+  # explorados, mas em consonancia com o grupo "Outras Bacias" houve uma queda
+  # de sua contagem em 2020. O g_6 apresenta o dianostico, que essa queda em
+  # especial ocorre na Petrobras, enquanto que "Outras Empresas" houve um
+  # aumento razoavel. O g_7 e o g_8 mostram a historia completa, é possivel
+  # indentificar neles que a produção da petrobras tem caido na bacia de
+  # Campos/RJ, enquanto em Santos/RJ aumentou, esse mesmo cenario é resiproca
+  # para a quantidade de poços sendo explorados. Pelo que da para observar a
+  # Petrobras deslocou sua produção para a bacia de Santos/RJ no ano de 2020.
+  # Numa pesquisa raza pode dectar três fatores para essa movimentação: i) A
+  # Petrobras hibernou duas plantaformas de petroleo em Campos/RJ, em 2020. ii)
+  # A ANP cedeu de 10 campos antigos da Petrobras em Campos/RJ para outras
+  # empresas, tambem no mesmo periodo. iii) A atratividade de novos poços de
+  # exploração no presal.
+
+  # Em parte pode se observar uma produção estavel das bacias. Contudo com resalvas
+  # de desmobilização politica. A exploração e a discusão não comprovam a hipotese 
+  # da existecia de uma inerente instabilidade politica na produção de petroleo, 
+  # pelo contrario. A produção de petroleo se demonstrou no recorte analise extremamente
+  # estavel, com a evolução e mudanças na produção de petroleo e quantitavivo de poços
+  # apresentando um claro padrão no comportamento. Além disso, foi possivel averiguar 
+  # tambem que as mudanças nas movimentações da petrobras aconteceram por movimentações 
+  # estrategicas para colocar ou para manter a empresa em um cenario de produtividade.
+  # Fato esse que se comprova com os graficos g_11 e g_12.
+
+
