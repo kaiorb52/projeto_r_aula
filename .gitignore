@@ -2,6 +2,13 @@
 .Rhistory
 .RData
 .Ruserdata
-0. data-raw
-0. nilo
 .here
+
+_targets
+_targets.R
+0. nilo
+1. data/plot
+2. scripts/profundidade_test.R
+2. scripts/targets.R
+2. scripts/functions.R
+4. figs/maps_nilo
