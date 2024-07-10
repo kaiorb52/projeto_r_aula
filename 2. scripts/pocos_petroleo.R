@@ -3,22 +3,25 @@
 # Nome: Kaio R. Barbara
 
 # ===========================================================================
-# 
-# Este script é uma sistematização inicial com os dados da Producao de barril de 
-# petroleo da Agencia Nacional do Petroleo, presentes no caminho: "0. data-raw/".
-# Que foram baixados e extraidos com o script python "2. scripts/Baixador_anp_pocos_V2.py"
-# e reordernados a mão pelo autor. Ademais, foi utilizado tambem do banco de dados 
-# "Tabela_pocos_2024_Maio_12" tambem da ANP. Esse fonte de dados foi utilizada para 
-# aglomerar informações relativas a lat. e long. dos pocos e outros detalhes. 
-# 
+#
+# Este script é uma sistematização inicial com os dados da Producao de barril de
+# petroleo da Agencia Nacional do Petroleo, presentes no caminho:
+# "https://github.com/kaiorb52/projeto_r_aula/tree/main/0.%20data-raw". Que
+# foram baixados e extraidos com o script python:
+# "https://github.com/kaiorb52/projeto_r_aula/blob/main/2.%20scripts/Baixador_anp_pocos_V2.py"
+# e reordernados manualmente pelo autor. Ademais, foi utilizado tambem do banco
+# de dados "Tabela_pocos_2024_Maio_12" tambem da ANP. Esse fonte de dados foi
+# utilizada para aglomerar informações relativas a lat. e long. dos pocos e
+# outros detalhes.
+#
 # ===========================================================================
 
 # Objetivo da pesquisa:
 
 # A presente exploração tem o intuito de levantar fatores que diferenciam as
-# bacias de Santos e de Campos. Analisando a evolução de ambas as bacias produtoras 
-# e buscando diagnosticar tendências. A hipótese do trabalho seria se existiria 
-# uma inerente instabilidade política na Producao de petróleo.
+# bacias de Santos e de Campos. Analisando a evolução de ambas as bacias
+# produtoras e buscando diagnosticar tendências. A hipótese do trabalho seria se
+# existiria uma inerente instabilidade política na Producao de petróleo.
 
 options(scipen = 999)
 set.seed(100)
@@ -35,9 +38,9 @@ pacman::p_load(
 
 pacotes_load <- function(...){
 
-  # Em geral essa função existe por pura preguiça de abrir/esquecer os pacotes
-  # A ideia era fazer uma função utilizando de poucas funções e sem utilizar o 
-  # for loop. Fiquei satisfeito com o resutaldo, mas acho que tem o que melhorar.
+  # Em geral essa função existe por pura preguiça de abrir/esquecer os pacotes A
+  # ideia era fazer uma função utilizando de poucas funções e sem utilizar o for
+  # loop. Fiquei satisfeito com o resutaldo, mas acho que tem o que melhorar.
 
   if (!all(c("tidyverse", "glue", "readxl") %in% .packages())){
     pacman::p_load(tidyverse, glue, readxl)  
@@ -47,10 +50,10 @@ pacotes_load <- function(...){
 
 import_producao1 <- function(ano, mes, skip) {
   
-  # Responsavel pela importação dos dados das Producao dos pocos de petroleo.
-  # A função carrega as respectivas panilhas xlsx do meses e anos selecionado.
-  # Faz o trabalho de sistematizar a manipulação inicial do banco de dados,
-  # transformando os xlsxs importados em uma lista, limpa e descarta variaveis 
+  # Responsavel pela importação dos dados das Producao dos pocos de petroleo. A
+  # função carrega as respectivas panilhas xlsx do meses e anos selecionado. Faz
+  # o trabalho de sistematizar a manipulação inicial do banco de dados,
+  # transformando os xlsxs importados em uma lista, limpa e descarta variaveis
   # desnecessarias.
   
   pacotes_load()
@@ -81,10 +84,10 @@ import_producao1 <- function(ano, mes, skip) {
 
 import_producao2 <- function(path) {
 
-  # A presente função é outra facilitadora para a importação das panilhas da Producao 
-  # por pocos. Contudo é uma elaboração mais simples, se comparado a anterior. 
-  # Ela foi feita para os anos que os dados, eram apenas armazenados em uma unica panilha 
-  # anual, como foi no caso de 2005-2018.
+  # A presente função é outra facilitadora para a importação das panilhas da
+  # Producao por pocos. Contudo é uma elaboração mais simples, se comparado a
+  # anterior. Ela foi feita para os anos que os dados, eram apenas armazenados
+  # em uma unica panilha anual, como foi no caso de 2005-2018.
 
   pacotes_load()
   
@@ -147,14 +150,15 @@ rm(funcoes)
 # 1. Criação dos data.frames ================================================
 ## 1.1 Producao dos pocos de petroleo unificados ============================
 
-  # Esse sistematização cria o principal data.frame do projeto. O segmento utiliza
-  # da função import_producao1 e 2 para abrir as panilhas xlsx. É utilizado de listas 
-  # para armazenar esses dfs e com isso é utilizado do bind_rows para unir toda a 
-  # lista. 
+  # Esse sistematização cria o principal data.frame do projeto. O segmento
+  # utiliza da função import_producao1 e 2 para abrir as panilhas xlsx. É
+  # utilizado de listas para armazenar esses dfs e com isso é utilizado do
+  # bind_rows para unir toda a lista.
 
-  # O produto final é o df producao_u(nificado) que compoe a Producao de petroleo 
-  # de cada poço de exploração em determinado mes do ano. Os anos disponiveis pela anp
-  # são de 2005-2023 e o df é composto por 10 colunas (variaveis) e 225.543 linhas.
+  # O produto final é o df producao_u(nificado) que compoe a Producao de
+  # petroleo de cada poço de exploração em determinado mes do ano. Os anos
+  # disponiveis pela anp são de 2005-2023 e o df é composto por 10 colunas
+  # (variaveis) e 225.543 linhas.
 
 list_prod <- list(
     prod_2023 = import_producao1(ano = 2023, sprintf("%02d", 1:9), skip = 3),
@@ -425,17 +429,17 @@ for (g_name in names(list_graficos)){
 
 # Conclusão e analise:
 
-  # Os graficos exploratorios indicam que ao decorrer do recorte temporal analisado, 
-  # 2005-2023, em geral a produção de barris de petroleo apenas aumentou(g_1). 
-  # Contudo, esse cresimento teve porpoções desiguiais nas diferentes bacias, como 
-  # mostra o grafico g_2. A bacia de Campos/RJ teve uma produção estavel e alta 
-  # de 2005 a 2016, até que em 2017 ela declinou, enquanto a bacia de Santos/RJ 
-  # teve um crescimento constante, ultrapassando a produção de Campos/RJ em 2018.
-  # O g_3, demonstra que em geral a Petrobras se posiciona como o maior explorador 
-  # de Petroleo brasileiro, enquanto o grupo de "Outras Empresas", representam 
-  # uma amostra pequena da produção nacional. Esse diagnostico é em geral esperado
-  # mediante ao fato que historicamente a Petrobras possuiu monopolio da exploração
-  # do petroleo.
+  # Os graficos exploratorios indicam que ao decorrer do recorte temporal
+  # analisado, 2005-2023, em geral a produção de barris de petroleo apenas
+  # aumentou(g_1). Contudo, esse cresimento teve porpoções desiguiais nas
+  # diferentes bacias, como mostra o grafico g_2. A bacia de Campos/RJ teve uma
+  # produção estavel e alta de 2005 a 2016, até que em 2017 ela declinou,
+  # enquanto a bacia de Santos/RJ teve um crescimento constante, ultrapassando a
+  # produção de Campos/RJ em 2018. O g_3, demonstra que em geral a Petrobras se
+  # posiciona como o maior explorador de Petroleo brasileiro, enquanto o grupo
+  # de "Outras Empresas", representam uma amostra pequena da produção nacional.
+  # Esse diagnostico é em geral esperado mediante ao fato que historicamente a
+  # Petrobras possuiu monopolio da exploração do petroleo.
   
   # Analisando num outro ambito, a contagem de poços sendo explorados sempre
   # manteve o mesmo nivel, contudo com uma queda significativa em 2020 (g_4). O
@@ -455,14 +459,15 @@ for (g_name in names(list_graficos)){
   # empresas, tambem no mesmo periodo. iii) A atratividade de novos poços de
   # exploração no presal.
 
-  # Em parte pode se observar uma produção estavel das bacias. Contudo com resalvas
-  # de desmobilização politica. A exploração e a discusão não comprovam a hipotese 
-  # da existecia de uma inerente instabilidade politica na produção de petroleo, 
-  # pelo contrario. A produção de petroleo se demonstrou no recorte analise extremamente
-  # estavel, com a evolução e mudanças na produção de petroleo e quantitavivo de poços
-  # apresentando um claro padrão no comportamento. Além disso, foi possivel averiguar 
-  # tambem que as mudanças nas movimentações da petrobras aconteceram por movimentações 
-  # estrategicas para colocar ou para manter a empresa em um cenario de produtividade.
-  # Fato esse que se comprova com os graficos g_11 e g_12.
+  # Em parte pode se observar uma produção estavel das bacias. Contudo com
+  # resalvas de desmobilização politica. A exploração e a discusão não comprovam
+  # a hipotese da existecia de uma inerente instabilidade politica na produção
+  # de petroleo, pelo contrario. A produção de petroleo se demonstrou no recorte
+  # analise extremamente estavel, com a evolução e mudanças na produção de
+  # petroleo e quantitavivo de poços apresentando um claro padrão no
+  # comportamento. Além disso, foi possivel averiguar tambem que as mudanças nas
+  # movimentações da petrobras aconteceram por movimentações estrategicas para
+  # colocar ou para manter a empresa em um cenario de produtividade. Fato esse
+  # que se comprova com os graficos g_11 e g_12.
 
 
